@@ -1,0 +1,19 @@
+[{
+    "slug": "my-first-post",
+    "title": "My First Post",
+    "author": "Jane Doe",
+    "content": "This is the content of the very first post. Welcome!"
+  },
+  {
+    "slug": "learning-astro",
+    "title": "Learning Astro with Large Datasets",
+    "author": "John Smith",
+    "content": "Astro's getStaticPaths is powerful for handling large amounts of data."
+  },
+  {
+    "slug": "streaming-data",
+    "title": "Why Streaming is Essential",
+    "author": "Jane Doe",
+    "content": "Streaming prevents your build process from crashing due to memory limits."
+  }
+]

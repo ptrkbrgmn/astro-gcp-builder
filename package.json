@@ -1,0 +1,24 @@
+{
+  "name": "astro-gcp-builder",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "mocha 'test/**/*.test.js'",
+    "emulators": "firebase emulators:start",
+    "deploy": "firebase deploy --only functions,hosting,storage"
+  },
+  "devDependencies": {
+    "astro": "^4.10.2",
+    "chai": "^4.3.10",
+    "cheerio": "^1.0.0-rc.12",
+    "firebase-admin": "^12.7.0",
+    "firebase-tools": "^13.11.2",
+    "mocha": "^10.4.0",
+    "node-fetch": "^3.3.2",
+    "playwright": "^1.56.1",
+    "stream-chain": "^2.2.5",
+    "stream-json": "^1.8.0",
+    "testdouble": "^3.20.2"
+  }
+}
