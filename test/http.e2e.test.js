@@ -1,8 +1,5 @@
-// test/e2e.test.js
 import { expect } from 'chai';
 import admin from 'firebase-admin';
-import fs from 'fs/promises';
-import path from 'path';
 import fetch from 'node-fetch'; // Using fetch to call the HTTP endpoint
 import * as cheerio from 'cheerio';
 

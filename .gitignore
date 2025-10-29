@@ -67,3 +67,6 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Ignore a specific file
+test/stress-test/large-data.json
