@@ -13,7 +13,7 @@ describe('Astro Build Integration Test', () => {
 
     await fs.rm(TEST_OUT_DIR, { recursive: true, force: true });
     
-    process.env.JSON_FILE_PATH = path.resolve(process.cwd(), 'functions/src/data/posts.json');
+    process.env.JSON_FILE_PATH = path.resolve(process.cwd(), 'test/sample-data/posts.json');
     
     console.log('--- Starting real Astro build for integration test... ---');
     await build({

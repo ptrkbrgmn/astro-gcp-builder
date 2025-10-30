@@ -19,11 +19,12 @@ interface Post {
 export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   const pages: { params: { slug: string }; props: { post: Post } }[] = [];
   
-  const jsonPath = process.env.JSON_FILE_PATH || path.resolve(process.cwd(), 'src/data/posts.json');
+  const jsonPath = process.env.JSON_FILE_PATH;
 
   if (!jsonPath) {
-    throw new Error("Could not determine JSON file path!");
+    throw new Error("CRITICAL: Environment variable JSON_FILE_PATH was not set. The build cannot proceed.");
   }
+
   console.log(`Streaming data from: ${jsonPath}`);
 
   // ✅ 1. Create a pipeline using the 'chain' function.

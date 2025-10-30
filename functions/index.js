@@ -2,36 +2,36 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { onObjectFinalized } from 'firebase-functions/v2/storage';
 import { build as realAstroBuild } from 'astro';
 import { Storage as RealGcpStorage } from '@google-cloud/storage';
-import { generateSite } from './services/siteGenerator.js';
+import { generateSite } from './src/services/siteGenerator.js';
 
 
-export const handler = onRequest({
-    timeoutSeconds: 540,
-    memory: '1GiB',
-  }, async (req, res) => {
-  try {
-    const { pathToLargeJsonFile } = req.body;
-    if (!pathToLargeJsonFile) {
-      return res.status(400).send('Missing "pathToLargeJsonFile" in request body.');
-    }
+// export const handler = onRequest({
+//     timeoutSeconds: 540,
+//     memory: '1GiB',
+//   }, async (req, res) => {
+//   try {
+//     const { pathToLargeJsonFile } = req.body;
+//     if (!pathToLargeJsonFile) {
+//       return res.status(400).send('Missing "pathToLargeJsonFile" in request body.');
+//     }
 
-    await generateSite(pathToLargeJsonFile, {
-      build: realAstroBuild,
-      Storage: RealGcpStorage
-    });
+//     await generateSite(pathToLargeJsonFile, {
+//       build: realAstroBuild,
+//       Storage: RealGcpStorage
+//     });
 
-    res.status(200).send('Static site generated and uploaded successfully!');
-  } catch (error) {
-    console.error('An error occurred in the handler:', error);
-    res.status(500).send('Failed to build and deploy site.');
-  }
-});
+//     res.status(200).send('Static site generated and uploaded successfully!');
+//   } catch (error) {
+//     console.error('An error occurred in the handler:', error);
+//     res.status(500).send('Failed to build and deploy site.');
+//   }
+// });
 
 const sourceBucketName = 'your-source-json-bucket';
 
 export const generateOnUpload = onObjectFinalized({
     bucket: sourceBucketName, // Only listen to the source bucket
-    timeoutSeconds: 540,
+    timeoutSeconds: 3600,
     memory: '1GiB',
   }, async (event) => {
     

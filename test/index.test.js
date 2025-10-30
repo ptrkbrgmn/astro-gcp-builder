@@ -2,7 +2,7 @@ import * as td from 'testdouble';
 import fs from 'fs/promises';
 import path from 'path';
 
-import { generateSite } from '../functions/services/siteGenerator.js';
+import { generateSite } from '../functions/src/services/siteGenerator.js';
 
 describe('Site Generation Logic', () => {
 
