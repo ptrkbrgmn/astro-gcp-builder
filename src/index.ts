@@ -32,23 +32,29 @@ import { onObjectFinalized } from 'firebase-functions/v2/storage';
 
 export const generateOnUpload = onObjectFinalized({
   bucket: SOURCE_BUCKET_NAME, // Only listen to the source bucket
-    timeoutSeconds: 3600,
-    memory: '1GiB',
-  }, async (event) => {
-    
-    const { name: filePath, bucket } = event.data;
+  timeoutSeconds: 3600,
+  memory: '1GiB',
+}, async (event) => {
+  const { name: objectName, bucket } = event.data;
 
-    console.log(`File ${filePath} uploaded to bucket ${bucket}. Starting site generation.`);
-    
-    try {
-      // 3. Call the exact same shared logic
-      await generateSite(filePath, {
-        build: realAstroBuild,
-        Storage: RealGcpStorage
-      });
-      console.log('Storage-triggered function executed successfully.');
-    } catch (error) {
-      console.error('An error occurred during storage-triggered site generation:', error);
-      // In a background function, we log errors for monitoring. There's no user to respond to.
-    }
-  });
+  if (!objectName?.endsWith('.json')) {
+    console.log('[storage-trigger] Ignoring non-JSON object', { bucket, objectName });
+    return;
+  }
+
+  console.log('[storage-trigger] Finalize event received', { path: `gs://${bucket}/${objectName}` });
+
+  try {
+    await generateSite(objectName, {
+      build: realAstroBuild,
+      Storage: RealGcpStorage,
+    });
+    console.log('[storage-trigger] Site generation succeeded', { source: objectName });
+  } catch (error) {
+    console.error('[storage-trigger] Site generation failed', {
+      source: objectName,
+      bucket,
+      message: (error as Error).message,
+    });
+  }
+});

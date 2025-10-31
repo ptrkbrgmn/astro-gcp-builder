@@ -1,17 +1,13 @@
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { fileURLToPath } from 'url';
 import type { AstroInlineConfig } from 'astro';
 import type { Storage, Bucket } from '@google-cloud/storage';
 import { SOURCE_BUCKET_NAME, DEST_BUCKET_NAME } from '../config/env.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// Bucket names now sourced from environment (with defaults) via config/env.ts
-
 /**
- * Recursively uploads files from a local directory to a GCS bucket.
- * @param {string} directoryPath The local directory to upload.
- * @param {object} bucket The GCS bucket object.
+ * Recursively uploads files from a local directory to a GCS bucket.k
+ * @param {string} directoryPath
+ * @param {object} bucket
  */
 async function uploadDirectory(directoryPath: string, bucket: Bucket): Promise<void> {
   const files = await fs.readdir(directoryPath, { withFileTypes: true });
@@ -35,7 +31,6 @@ interface GenerateSiteDependencies {
   Storage: new () => Storage;
 }
 
-// dependencies injected to facilitate testing
 export async function generateSite(pathToLargeJsonFile: string, dependencies: GenerateSiteDependencies): Promise<void> {
   const { build, Storage } = dependencies;
   const storage = new Storage();
@@ -53,10 +48,13 @@ export async function generateSite(pathToLargeJsonFile: string, dependencies: Ge
     });
     console.log('Download complete.');
 
-    // 2. BUILD
-    process.env.JSON_FILE_PATH = tempJsonPath;
+  // 2. BUILD
+  // Expose the downloaded JSON path to Astro's dynamic route generator.
+  // The file `src/pages/posts/[slug].astro` reads `process.env.JSON_FILE_PATH` inside getStaticPaths()
+  // to stream & generate one page per post entry. This must be set BEFORE calling `build()`.
+  process.env.JSON_FILE_PATH = tempJsonPath;
     await build({
-      root: path.resolve(__dirname, '..', '..'),
+      root: process.cwd(),
       outDir: tempOutDir,
       cacheDir: tempCacheDir,
     });

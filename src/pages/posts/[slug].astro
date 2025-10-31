@@ -1,6 +1,5 @@
 ---
 import { createReadStream } from 'fs';
-import path from 'path';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { GetStaticPathsResult } from 'astro';
 
@@ -27,18 +26,14 @@ export async function getStaticPaths(): Promise<GetStaticPathsResult> {
 
   console.log(`Streaming data from: ${jsonPath}`);
 
-  // ✅ 1. Create a pipeline using the 'chain' function.
-  // This is the key to getting a correctly typed AsyncIterable.
   const pipeline = new chain([
     parser(),
-    new pick({ filter: '' }), // Pick all items from the root level
+    new pick({ filter: '' }),
     new streamArray()
   ] as any);
 
-  // 2. Pipe the file stream INTO the pipeline's input.
   createReadStream(jsonPath).pipe(pipeline);
 
-  // 3. The pipeline itself is the iterable. This works without errors.
   for await (const { value } of pipeline) {
     const post = value as Post;
     pages.push({
