@@ -70,3 +70,11 @@ node_modules/
 
 # Ignore a specific file
 test/stress-test/large-data.json
+
+*.local
+
+# TypeScript incremental build info
+tsconfig.tsbuildinfo
+
+# Build output
+dist/

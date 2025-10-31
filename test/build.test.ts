@@ -17,9 +17,9 @@ describe('Astro Build Integration Test', () => {
     
     console.log('--- Starting real Astro build for integration test... ---');
     await build({
-      // ✅ The fix: Pass the string path directly, not a URL object.
-      root: path.resolve(process.cwd(), 'functions'),
+      root: path.resolve(process.cwd()),
       outDir: TEST_OUT_DIR,
+      cacheDir: path.join(TEST_OUT_DIR, '.astro-cache'),
     });
     console.log('--- Astro build complete. ---');
   });
@@ -38,7 +38,7 @@ describe('Astro Build Integration Test', () => {
     const stats = await fs.stat(filePath);
     expect(stats.isFile()).to.be.true;
   });
-// 
+
   it('should have the correct title in the H1 tag for "my-first-post"', async () => {
     const filePath = path.join(TEST_OUT_DIR, 'posts', 'my-first-post', 'index.html');
     
