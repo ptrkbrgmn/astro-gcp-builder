@@ -1,6 +1,6 @@
-import { onRequest } from 'firebase-functions/v2/https';
-import type { Request } from 'firebase-functions/v2/https';
-import type { Response } from 'express'; // Firebase uses Express.js types for req/res
+// import { onRequest } from 'firebase-functions/v2/https';
+// import type { Request } from 'firebase-functions/v2/https';
+// import type { Response } from 'express';
 import { build as realAstroBuild } from 'astro';
 import { Storage as RealGcpStorage } from '@google-cloud/storage';
 import { generateSite } from './services/siteGenerator.js'; // Note the .js extension

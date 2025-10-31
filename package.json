@@ -20,7 +20,9 @@
     "stream-chain": "^2.2.5",
     "stream-json": "^1.8.0"
   },
-  "engines": { "node": "18" },
+  "engines": {
+    "node": "22"
+  },
   "devDependencies": {
     "@types/chai": "^5.2.3",
     "@types/cheerio": "^0.22.35",
@@ -42,7 +44,7 @@
     "testdouble": "^3.20.2",
     "ts-mocha": "^11.1.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.0.0",
     "typescript": "^5.9.3"
-    ,"tsx": "^4.0.0"
   }
 }
