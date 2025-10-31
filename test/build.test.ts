@@ -4,60 +4,41 @@ import fs from 'fs/promises';
 import path from 'path';
 import * as cheerio from 'cheerio';
 
-const TEST_OUT_DIR = path.resolve(process.cwd(), 'test-dist');
+const TEST_OUT_DIR = path.resolve('test-dist');
 
 describe('Astro Build Integration Test', () => {
+  const sampleJson = path.resolve('test/sample-data/posts.json');
 
-  before(async function() {
-    this.timeout(30000);
+  function htmlFor(slug: string) {
+    return path.join(TEST_OUT_DIR, 'posts', slug, 'index.html');
+  }
 
+  before(async function () {
     await fs.rm(TEST_OUT_DIR, { recursive: true, force: true });
-    
-    process.env.JSON_FILE_PATH = path.resolve(process.cwd(), 'test/sample-data/posts.json');
-    
-    console.log('--- Starting real Astro build for integration test... ---');
+    process.env.JSON_FILE_PATH = sampleJson;
     await build({
-      root: path.resolve(process.cwd()),
+      root: process.cwd(),
       outDir: TEST_OUT_DIR,
       cacheDir: path.join(TEST_OUT_DIR, '.astro-cache'),
     });
-    console.log('--- Astro build complete. ---');
   });
-  
-  // After all tests are done, clean up the generated files.
+
   after(async () => {
     await fs.rm(TEST_OUT_DIR, { recursive: true, force: true });
   });
 
-  it('should create an HTML file for the post "my-first-post"', async () => {
-    // Astro creates a folder for each dynamic route.
-    const filePath = path.join(TEST_OUT_DIR, 'posts', 'my-first-post', 'index.html');
-    
-    // The simplest check: does the file exist?
-    // fs.stat throws an error if the file doesn't exist, which fails the test.
+  it('generates expected post HTML with correct title', async () => {
+    const filePath = htmlFor('my-first-post');
     const stats = await fs.stat(filePath);
     expect(stats.isFile()).to.be.true;
+    const $ = cheerio.load(await fs.readFile(filePath, 'utf-8'));
+    expect($('h1').text()).to.equal('My First Post');
   });
 
-  it('should have the correct title in the H1 tag for "my-first-post"', async () => {
-    const filePath = path.join(TEST_OUT_DIR, 'posts', 'my-first-post', 'index.html');
-    
-    // 1. Read the content of the generated HTML file.
-    const htmlContent = await fs.readFile(filePath, 'utf-8');
-    
-    // 2. Parse the HTML with cheerio so we can query it.
-    const $ = cheerio.load(htmlContent);
-    
-    // 3. Find the <h1> tag and check its text content.
-    const h1Text = $('h1').text();
-    expect(h1Text).to.equal('My First Post');
-  });
-
-  it('should correctly generate all 3 posts from the sample JSON', async () => {
+  it('generates exactly the 3 expected post directories', async () => {
     const postsDir = path.join(TEST_OUT_DIR, 'posts');
-    const files = await fs.readdir(postsDir);
-    // We expect a directory for each of the 3 posts in our sample file.
-    expect(files).to.have.lengthOf(3);
-    expect(files).to.include.members(['my-first-post', 'learning-astro', 'streaming-data']);
+    const dirs = await fs.readdir(postsDir);
+    expect(dirs).to.have.members(['my-first-post', 'learning-astro', 'streaming-data']);
+    expect(dirs).to.have.lengthOf(3);
   });
 });

@@ -1,14 +1,11 @@
-// test/storage.e2e.test.js
 import { expect } from 'chai';
 import admin from 'firebase-admin';
 import * as cheerio from 'cheerio';
 
-// --- Configuration ---
 const PROJECT_ID = 'astro-gcp-builder-test-182e3';
 const SOURCE_BUCKET_NAME = 'your-source-json-bucket';
 const DEST_BUCKET_NAME = 'your-final-static-site-bucket';
 
-// --- Initialize Admin SDK ---
 process.env.FIREBASE_STORAGE_EMULATOR_HOST = 'localhost:9199';
 if (!admin.apps.length) {
   admin.initializeApp({ projectId: PROJECT_ID });
@@ -16,33 +13,40 @@ if (!admin.apps.length) {
 const sourceBucket = admin.storage().bucket(SOURCE_BUCKET_NAME);
 const destBucket = admin.storage().bucket(DEST_BUCKET_NAME);
 
-describe('Storage-Triggered E2E Test', function () {
-  this.timeout(30000);
+async function waitForFile(path: string, timeoutMs = 20000, intervalMs = 1000): Promise<Buffer> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const [contents] = await destBucket.file(path).download();
+      return contents; // Success
+    } catch (err) {
+      // Swallow not-found errors and retry.
+    }
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  throw new Error(`Timed out waiting for file: ${path}`);
+}
 
+describe('Storage-Triggered E2E Test', () => {
   before(async () => {
     await sourceBucket.deleteFiles({ force: true });
     await destBucket.deleteFiles({ force: true });
   });
 
-  it('should generate the site when a file is uploaded', async () => {
-    // 1. ARRANGE: Create and upload the test file. This is the trigger.
+  it('generates the site when a JSON file is uploaded', async () => {
+    // 1. Upload trigger JSON.
     const testPost = [{ slug: 'storage-test', title: 'Storage Trigger Test' }];
-    const testFileName = 'storage-trigger.json';
-    await sourceBucket.file(testFileName).save(JSON.stringify(testPost));
-    console.log('E2E (Storage): Uploaded test file, function should trigger automatically.');
+    const triggerFile = 'storage-trigger.json';
+    await sourceBucket.file(triggerFile).save(JSON.stringify(testPost));
+    console.log('[e2e] Uploaded trigger JSON; waiting for function...');
 
-    // 2. ACT: Wait for the background function to do its work.
-    console.log('E2E (Storage): Waiting 15 seconds for build to complete...');
-    await new Promise(resolve => setTimeout(resolve, 15000));
-
-    // 3. ASSERT: Check the destination bucket for the result.
+    // 2. Wait for generated HTML via polling (faster & less brittle than fixed sleep).
     const finalHtmlPath = `posts/${testPost[0].slug}/index.html`;
-    const [fileContents] = await destBucket.file(finalHtmlPath).download();
+    const fileContents = await waitForFile(finalHtmlPath);
 
+    // 3. Assert page content.
     const $ = cheerio.load(fileContents.toString());
-    const h1Text = $('h1').text();
-
-    expect(h1Text).to.equal('Storage Trigger Test');
-    console.log('E2E (Storage): HTML content verified successfully!');
+    expect($('h1').text()).to.equal('Storage Trigger Test');
+    console.log('[e2e] Generated HTML verified successfully.');
   });
 });

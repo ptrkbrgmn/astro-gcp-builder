@@ -31,7 +31,7 @@ import { onObjectFinalized } from 'firebase-functions/v2/storage';
 // );
 
 export const generateOnUpload = onObjectFinalized({
-  bucket: SOURCE_BUCKET_NAME, // Only listen to the source bucket
+  bucket: SOURCE_BUCKET_NAME,
   timeoutSeconds: 3600,
   memory: '1GiB',
 }, async (event) => {
