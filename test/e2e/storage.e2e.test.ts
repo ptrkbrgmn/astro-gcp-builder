@@ -5,6 +5,7 @@
 import { expect } from 'chai';
 import admin from 'firebase-admin';
 import * as cheerio from 'cheerio';
+import type { Post } from '../../src/types/types';
 
 const PROJECT_ID = 'astro-gcp-builder-test-182e3';
 const SOURCE_BUCKET_NAME = 'your-source-json-bucket';
@@ -39,7 +40,12 @@ describe('Storage-Triggered E2E Test', () => {
 
   it('generates the site when a JSON file is uploaded', async () => {
     // 1. Upload trigger JSON.
-    const testPost = [{ slug: 'storage-test', title: 'Storage Trigger Test' }];
+    const testPost: Post[] = [{
+      slug: 'storage-test',
+      title: 'Storage Trigger Test',
+      author: 'E2E Test',
+      content: 'Content generated for storage trigger end-to-end test.'
+    }];
     const triggerFile = 'storage-trigger.json';
     await sourceBucket.file(triggerFile).save(JSON.stringify(testPost));
     console.log('[e2e] Uploaded trigger JSON; waiting for function...');

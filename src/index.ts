@@ -1,16 +1,17 @@
 // import { onRequest } from 'firebase-functions/v2/https';
 // import type { Request } from 'firebase-functions/v2/https';
 // import type { Response } from 'express';
-import { build as realAstroBuild } from 'astro';
-import { Storage as RealGcpStorage } from '@google-cloud/storage';
-import { generateSite } from './services/siteGenerator.js'; // Note the .js extension
-import { SOURCE_BUCKET_NAME } from './config/env.js';
-import { onObjectFinalized } from 'firebase-functions/v2/storage';
+import { Storage as RealGcpStorage } from "@google-cloud/storage";
+import { generateSite } from "./services/siteGenerator.js"; // Note the .js extension
+import { SOURCE_BUCKET_NAME } from "./config/env.js";
+import { onObjectFinalized } from "firebase-functions/v2/storage";
+import { astroRender } from "./services/render/astro-rendering.js";
+import { plainRender } from "./services/render/plain-rendering.js";
 
 // export const handler = onRequest({
 //     timeoutSeconds: 540,
 //     memory: '1GiB',
-//   }, 
+//   },
 //   async (req: Request, res: Response) => {
 //     try {
 //       const { pathToLargeJsonFile } = req.body;
@@ -30,31 +31,39 @@ import { onObjectFinalized } from 'firebase-functions/v2/storage';
 //   }
 // );
 
-export const generateOnUpload = onObjectFinalized({
-  bucket: SOURCE_BUCKET_NAME,
-  timeoutSeconds: 3600,
-  memory: '1GiB',
-}, async (event) => {
-  const { name: objectName, bucket } = event.data;
+export const generateOnUpload = onObjectFinalized(
+  {
+    bucket: SOURCE_BUCKET_NAME,
+    timeoutSeconds: 3600,
+    memory: "1GiB",
+  },
+  async (event) => {
+    const { name: objectName, bucket } = event.data;
 
-  if (!objectName?.endsWith('.json')) {
-    console.log('[storage-trigger] Ignoring non-JSON object', { bucket, objectName });
-    return;
-  }
+    if (!objectName?.endsWith(".json")) {
+      console.log("[storage-trigger] Ignoring non-JSON object", {
+        bucket,
+        objectName,
+      });
+      return;
+    }
 
-  console.log('[storage-trigger] Finalize event received', { path: `gs://${bucket}/${objectName}` });
-
-  try {
-    await generateSite(objectName, {
-      build: realAstroBuild,
-      Storage: RealGcpStorage,
+    console.log("[storage-trigger] Finalize event received", {
+      path: `gs://${bucket}/${objectName}`,
     });
-    console.log('[storage-trigger] Site generation succeeded', { source: objectName });
-  } catch (error) {
-    console.error('[storage-trigger] Site generation failed', {
-      source: objectName,
-      bucket,
-      message: (error as Error).message,
-    });
+
+    try {
+      // Using plainRender for generation to avoid Astro build cost.
+      await generateSite(objectName, { renderSite: plainRender, Storage: RealGcpStorage });
+      console.log("[storage-trigger] Site generation succeeded", {
+        source: objectName,
+      });
+    } catch (error) {
+      console.error("[storage-trigger] Site generation failed", {
+        source: objectName,
+        bucket,
+        message: (error as Error).message,
+      });
+    }
   }
-});
+);

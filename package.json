@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "test": "NODE_ENV=test node --import tsx node_modules/.bin/ts-mocha 'test/**/*.ts'",
+  "test": "NODE_ENV=test node --import tsx node_modules/.bin/ts-mocha",
     "test:ci": "npm run build && npm test",
     "preemulators": "npm run build",
     "emulators": "firebase emulators:start",
